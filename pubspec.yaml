@@ -37,6 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   connectivity_plus: ^7.1.1
   sensors_plus: ^6.0.0
+  audioplayers: ^6.6.0
 
 dev_dependencies:
   flutter_test:
@@ -64,6 +65,7 @@ flutter:
   assets:
     - assets/logo.png
     - assets/Questoes.json
+    - media-files/genius/
 
 
   # An image asset can refer to one or more resolution-specific "variants", see
