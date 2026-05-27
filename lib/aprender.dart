@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'quizMyBrain.dart';
 import 'GeniusPlay.dart';
 import 'MemoCheck.dart';
+import 'Widgwe11.dart';
 
 class Aprender extends StatelessWidget {
   const Aprender({super.key});
@@ -119,6 +120,23 @@ class Aprender extends StatelessWidget {
               indent: 20,
               thickness: 1,
               color: Color(0XFF3C00A7),
+            ),
+            ListTile(
+              title: Text(
+                'Widget 11',
+                style: TextStyle(
+                  color: Color(0XFF3C00A7),
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Widgwe11()),
+                );
+              },
             ),
             ListTile(
               title: Text(

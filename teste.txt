@@ -1,7 +1,15 @@
 --[[
 
-AUTO QUEST + AUTO FARM + FLY
-GUI LEVE
+AUTO FARM + AUTO QUEST + FLY
+SCRIPT COMPLETO
+
+✔ GUI ARRASTÁVEL
+✔ BOTÃO ON/OFF
+✔ FECHAR SCRIPT
+✔ PEGA MISSÃO PRIMEIRO
+✔ VOA ATÉ O MOB
+✔ BATE VOANDO
+✔ ATAQUE MELHORADO
 
 ]]
 
@@ -20,52 +28,72 @@ local Player = Players.LocalPlayer
 
 local QUEST_NAME = "BanditQuest1"
 local QUEST_LEVEL = 1
-
 local QUEST_NPC = "Bandit Quest Giver"
-
 local TARGET_MOB = "Bandit"
 
 local FLY_SPEED = 300
 
 _G.AutoFarm = false
+_G.ScriptLoaded = true
 
 --========================
 -- GUI
 --========================
 
 local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "AutoFarmGui"
 ScreenGui.Parent = game.CoreGui
 ScreenGui.ResetOnSpawn = false
 
 local Main = Instance.new("Frame")
 Main.Parent = ScreenGui
-Main.Size = UDim2.new(0,180,0,85)
+Main.Size = UDim2.new(0,220,0,120)
 Main.Position = UDim2.new(0.05,0,0.4,0)
 Main.BackgroundColor3 = Color3.fromRGB(25,25,25)
 Main.BorderSizePixel = 0
+Main.Active = true
+Main.Draggable = true
 
 Instance.new("UICorner", Main)
 
+-- TITLE
+
 local Title = Instance.new("TextLabel")
 Title.Parent = Main
-Title.Size = UDim2.new(1,0,0.4,0)
+Title.Size = UDim2.new(1,0,0.28,0)
 Title.BackgroundTransparency = 1
 Title.Text = "AUTO FARM"
 Title.TextColor3 = Color3.new(1,1,1)
 Title.Font = Enum.Font.GothamBold
 Title.TextScaled = true
 
-local Button = Instance.new("TextButton")
-Button.Parent = Main
-Button.Size = UDim2.new(0.85,0,0.35,0)
-Button.Position = UDim2.new(0.075,0,0.52,0)
-Button.BackgroundColor3 = Color3.fromRGB(40,40,40)
-Button.Text = "OFF"
-Button.TextColor3 = Color3.new(1,1,1)
-Button.Font = Enum.Font.GothamBold
-Button.TextScaled = true
+-- BOTÃO ON/OFF
 
-Instance.new("UICorner", Button)
+local Toggle = Instance.new("TextButton")
+Toggle.Parent = Main
+Toggle.Size = UDim2.new(0.8,0,0.28,0)
+Toggle.Position = UDim2.new(0.1,0,0.35,0)
+Toggle.BackgroundColor3 = Color3.fromRGB(40,40,40)
+Toggle.Text = "OFF"
+Toggle.TextColor3 = Color3.new(1,1,1)
+Toggle.Font = Enum.Font.GothamBold
+Toggle.TextScaled = true
+
+Instance.new("UICorner", Toggle)
+
+-- BOTÃO FECHAR
+
+local Close = Instance.new("TextButton")
+Close.Parent = Main
+Close.Size = UDim2.new(0.8,0,0.2,0)
+Close.Position = UDim2.new(0.1,0,0.72,0)
+Close.BackgroundColor3 = Color3.fromRGB(170,0,0)
+Close.Text = "FECHAR SCRIPT"
+Close.TextColor3 = Color3.new(1,1,1)
+Close.Font = Enum.Font.GothamBold
+Close.TextScaled = true
+
+Instance.new("UICorner", Close)
 
 --========================
 -- FLY
@@ -73,23 +101,23 @@ Instance.new("UICorner", Button)
 
 local function FlyTo(pos)
 
-    local char = Player.Character
-    if not char then return end
+	local char = Player.Character
+	if not char then return end
 
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
+	local hrp = char:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
 
-    local distance = (hrp.Position - pos).Magnitude
-    local time = distance / FLY_SPEED
+	local distance = (hrp.Position - pos).Magnitude
+	local time = distance / FLY_SPEED
 
-    local tween = TweenService:Create(
-        hrp,
-        TweenInfo.new(time, Enum.EasingStyle.Linear),
-        {CFrame = CFrame.new(pos)}
-    )
+	local tween = TweenService:Create(
+		hrp,
+		TweenInfo.new(time, Enum.EasingStyle.Linear),
+		{CFrame = CFrame.new(pos)}
+	)
 
-    tween:Play()
-    tween.Completed:Wait()
+	tween:Play()
+	tween.Completed:Wait()
 
 end
 
@@ -99,30 +127,34 @@ end
 
 local function StartQuest()
 
-    local args = {
-        [1] = "StartQuest",
-        [2] = QUEST_NAME,
-        [3] = QUEST_LEVEL
-    }
+	pcall(function()
 
-    ReplicatedStorage.Remotes.CommF_:InvokeServer(unpack(args))
+		ReplicatedStorage.Remotes.CommF_:InvokeServer(
+			"StartQuest",
+			QUEST_NAME,
+			QUEST_LEVEL
+		)
+
+	end)
 
 end
 
 --========================
--- NPC
+-- QUEST NPC
 --========================
 
 local function GetQuestNPC()
 
-    for _,v in pairs(workspace:GetDescendants()) do
+	for _,v in pairs(workspace:GetDescendants()) do
 
-        if v.Name == QUEST_NPC
-        and v:IsA("Model") then
+		if v:IsA("Model")
+		and v.Name == QUEST_NPC
+		and v:FindFirstChild("HumanoidRootPart") then
 
-            return v
-        end
-    end
+			return v
+
+		end
+	end
 end
 
 --========================
@@ -131,72 +163,83 @@ end
 
 local function GetMob()
 
-    for _,v in pairs(workspace.Enemies:GetChildren()) do
+	for _,v in pairs(workspace.Enemies:GetChildren()) do
 
-        if v.Name == TARGET_MOB
-        and v:FindFirstChild("Humanoid")
-        and v:FindFirstChild("HumanoidRootPart")
-        and v.Humanoid.Health > 0 then
+		if v.Name == TARGET_MOB
+		and v:FindFirstChild("Humanoid")
+		and v:FindFirstChild("HumanoidRootPart")
+		and v.Humanoid.Health > 0 then
 
-            return v
-        end
-    end
+			return v
+
+		end
+	end
 end
 
 --========================
--- EQUIPAR
+-- EQUIPAR ARMA
 --========================
 
 local function EquipWeapon()
 
-    local char = Player.Character
+	local char = Player.Character
+	if not char then return end
 
-    for _,tool in pairs(Player.Backpack:GetChildren()) do
+	for _,tool in pairs(Player.Backpack:GetChildren()) do
 
-        if tool:IsA("Tool") then
+		if tool:IsA("Tool") then
 
-            char.Humanoid:EquipTool(tool)
-            break
+			char.Humanoid:EquipTool(tool)
+			break
 
-        end
-    end
+		end
+	end
 end
 
 --========================
--- ATAQUE
+-- ATAQUE MELHORADO
 --========================
 
 local function AttackMob(mob)
 
-    local char = Player.Character
-    if not char then return end
+	local char = Player.Character
+	if not char then return end
 
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
+	local hrp = char:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
 
-    while _G.AutoFarm
-    and mob
-    and mob.Parent
-    and mob:FindFirstChild("Humanoid")
-    and mob.Humanoid.Health > 0 do
+	repeat task.wait()
 
-        pcall(function()
+		pcall(function()
 
-            -- posiciona atrás do mob
-            hrp.CFrame = mob.HumanoidRootPart.CFrame * CFrame.new(0,0,4)
+			-- POSIÇÃO MAIS ESTÁVEL
+			hrp.CFrame = mob.HumanoidRootPart.CFrame * CFrame.new(0,12,6)
 
-            EquipWeapon()
+			EquipWeapon()
 
-            -- ataque
-            VirtualUser:Button1Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-            task.wait(0.1)
-            VirtualUser:Button1Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+			local tool = char:FindFirstChildOfClass("Tool")
 
-        end)
+			if tool then
 
-        task.wait(0.15)
+				tool:Activate()
 
-    end
+			else
+
+				VirtualUser:Button1Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+				task.wait(0.05)
+				VirtualUser:Button1Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+
+			end
+
+		end)
+
+		task.wait(0.08)
+
+	until not _G.AutoFarm
+	or not mob
+	or not mob.Parent
+	or mob.Humanoid.Health <= 0
+
 end
 
 --========================
@@ -205,51 +248,73 @@ end
 
 task.spawn(function()
 
-    while task.wait(1) do
+	while _G.ScriptLoaded do
 
-        if _G.AutoFarm then
+		task.wait(0.5)
 
-            local mob = GetMob()
+		if _G.AutoFarm then
 
-            if mob then
+			-- PEGA MISSÃO PRIMEIRO
+			local npc = GetQuestNPC()
 
-                AttackMob(mob)
+			if npc then
 
-            else
+				FlyTo(npc.HumanoidRootPart.Position + Vector3.new(0,5,0))
+				task.wait(1)
 
-                local npc = GetQuestNPC()
+				StartQuest()
 
-                if npc and npc:FindFirstChild("HumanoidRootPart") then
+			end
 
-                    FlyTo(npc.HumanoidRootPart.Position + Vector3.new(0,3,0))
+			task.wait(1)
 
-                    task.wait(1)
+			-- PROCURA MOB
+			local mob = GetMob()
 
-                    StartQuest()
+			if mob then
 
-                end
-            end
-        end
-    end
+				-- VOA ATÉ O MOB
+				FlyTo(mob.HumanoidRootPart.Position + Vector3.new(0,20,0))
+
+				task.wait(0.5)
+
+				AttackMob(mob)
+
+			end
+		end
+	end
 end)
 
 --========================
--- BOTÃO
+-- BOTÃO ON/OFF
 --========================
 
-Button.MouseButton1Click:Connect(function()
+Toggle.MouseButton1Click:Connect(function()
 
-    _G.AutoFarm = not _G.AutoFarm
+	_G.AutoFarm = not _G.AutoFarm
 
-    if _G.AutoFarm then
+	if _G.AutoFarm then
 
-        Button.Text = "ON"
-        Button.BackgroundColor3 = Color3.fromRGB(0,170,0)
+		Toggle.Text = "ON"
+		Toggle.BackgroundColor3 = Color3.fromRGB(0,170,0)
 
-    else
+	else
 
-        Button.Text = "OFF"
-        Button.BackgroundColor3 = Color3.fromRGB(40,40,40)
+		Toggle.Text = "OFF"
+		Toggle.BackgroundColor3 = Color3.fromRGB(40,40,40)
 
-    end
+	end
+end)
+
+--========================
+-- FECHAR SCRIPT
+--========================
+
+Close.MouseButton1Click:Connect(function()
+
+	_G.AutoFarm = false
+	_G.ScriptLoaded = false
+
+	ScreenGui:Destroy()
+
 end)

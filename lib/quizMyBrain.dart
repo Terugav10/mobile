@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
+import 'widget_scores.dart';
+
 class Questao {
   final int id;
   final int peso;
@@ -178,6 +180,10 @@ class _QuizMyBrainState extends State<QuizMyBrain> {
   }
 
   Future<void> _mostrarPontuacaoEVoltar() async {
+    await WidgetScores.saveScore('quizMyBrain', pontuacaoTotal);
+
+    if (!mounted) return;
+
     await showDialog<void>(
       context: context,
       barrierDismissible: false,

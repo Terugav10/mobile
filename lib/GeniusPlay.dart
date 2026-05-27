@@ -4,6 +4,8 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'widget_scores.dart';
+
 enum GeniusColor { yellow, blue, red, orange, green }
 
 class Geniusplay extends StatefulWidget {
@@ -305,6 +307,8 @@ class _GeniusplayState extends State<Geniusplay> {
     _partidaAtual++;
     final int scoreFinal = score;
     final String tempoFinal = tempoFormatado;
+
+    await WidgetScores.saveScore('geniusPlay', scoreFinal);
 
     _pararCronometro();
     _luzTimer?.cancel();
